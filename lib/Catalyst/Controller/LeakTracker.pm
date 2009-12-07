@@ -502,6 +502,54 @@ Maybe it's useful for someone.
 
 =back
 
+=head1 MINI-TUTORIAL
+
+=head2 Why use LeakTracker?
+
+You have a Catalyst application that is consuming more and more
+memory over time.  You would like to find out what classes are
+involved and where you may have cyclic references.  On a related note,
+one could probably tweak this thing into a memory profiler as well.
+
+=head2 How to use LeakTracker?
+
+Once you've plugged LeakTracker into your Catalyst application 
+(see L</SYNOPSIS>), you can easily get statistics via 
+Catalyst::Controller::LeakTracker. Just create a new controller exclusively
+for reporting on the objects that are not being garbage collected.  
+Here is how:
+
+	package MyAss::Controller::Leaks;
+	
+	sub BEGIN {
+		use Moose;
+		extends 'Catalyst::Controller::LeakTracker';
+	}
+	
+	# redirect leaks/ to the report about memory consumed by each request
+	sub index : Path : Args(0) {
+		my ( $self, $c ) = @_;
+		$c->forward("list_requests");  
+	}
+	
+	1
+	
+In effect, the controller above turns the URI C<$c.request.base/leaks> 
+into a report on the objects that still have references to them, and 
+thus consuming memory.
+
+=head2 How to Interpret the Results?
+
+The results found at B<leaks/> are I<per request>.  The results include 
+the Catalyst actions requested and how much memory each consumed.  One can 
+"drill-down" on the request ID and get a report of all objects that the request
+has left lingering about.  It's tits, try it out for yourself.
+
+=head2 When to Not Use LeakTracker?
+
+In Production, because it adds a significant amount of overhead 
+to your application.
+
 =head1 SEE ALSO
 
 L<Devel::Events>, L<Catalyst::Plugin::Leaktracker>,
