@@ -94,7 +94,11 @@ sub list_requests : Chained {
             body {
                 table {
                     attr { border => 1, style => "border: 1px solid black; padding: 0.3em" };
-                    row { map { th { $_ } } @fields };
+                    row {
+                        map {
+                            th { a { attr { href => $c->req->uri_with({ order_by => $_ }) } $_ } }
+                        } @fields
+                    };
 
                     foreach my $req ( @requests ) {
                         row {
