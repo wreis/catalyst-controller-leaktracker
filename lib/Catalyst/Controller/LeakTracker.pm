@@ -5,7 +5,7 @@ use parent qw(Catalyst::Controller);
 
 use Moose;
 
-our $VERSION = "0.05";
+our $VERSION = "0.06";
 
 use Data::Dumper ();
 use Devel::Cycle ();
@@ -26,10 +26,58 @@ my $size_of_empty_array = Devel::Size::total_size([]);
 
 sub end : Private { } # don't get Root's one
 
+sub order_by {
+    my ( $self, $requests, $field, $mode ) = @_;
+    return () unless @$requests;
+
+    my $order_by_meth = {
+        num => sub {
+            sort { $a->{$field} <=> $b->{$field} } @{$_[0]}
+        },
+        num_desc => sub {
+            sort { $b->{$field} <=> $a->{$field} } @{$_[0]}
+        },
+        lex => sub {
+            sort { $a->{$field} cmp $b->{$field} } @{$_[0]}
+        },
+        lex_desc => sub {
+            sort { $b->{$field} cmp $a->{$field} } @{$_[0]}
+        },
+    };
+    my $order_by_map;
+    if ( $mode && $mode eq 'desc' ) {
+        $order_by_map = {
+            ( map {
+                $_ => $order_by_meth->{'num_desc'}
+              } qw/id time leaks size/ ),
+            ( map {
+                $_ => $order_by_meth->{'lex_desc'}
+              } qw/action uri/ ),
+        };
+    }
+    else {
+        $order_by_map = {
+            ( map {
+                $_ => $order_by_meth->{'num'}
+              } qw/id time leaks size/ ),
+            ( map {
+                $_ => $order_by_meth->{'lex'}
+              } qw/action uri/ ),
+        };
+    }
+    if ( my $meth = $order_by_map->{$field} ) {
+        return $meth->($requests);
+    }
+    else {
+        return @$requests;
+    }
+}
+
 sub list_requests : Chained {
     my ( $self, $c ) = @_;
+    my $params = $c->req->params;
 
-    my $only_leaking = !$c->request->param("all");
+    my $only_leaking = !$params->{'all'};
 
     my $log = $c->devel_events_log; # FIXME used for repping, switch to exported when that api is available.
 
@@ -65,7 +113,13 @@ sub list_requests : Chained {
             size   => $size,
         }
     }
-
+    my ( $order_by, $order_by_desc )
+        = map { $params->{$_} } qw/order_by order_by_desc/;
+    @requests = $self->order_by(
+        \@requests,
+        $order_by || 'id',
+        $order_by_desc ? 'desc' : 'asc',
+    ) if @requests;
 
     my @fields = qw(id time action leaks size uri);
 
@@ -96,7 +150,16 @@ sub list_requests : Chained {
                     attr { border => 1, style => "border: 1px solid black; padding: 0.3em" };
                     row {
                         map {
-                            th { a { attr { href => $c->req->uri_with({ order_by => $_ }) } $_ } }
+                            my $desc = ( $order_by_desc || ( $order_by || '') ne $_) ? 0 : 1;
+                            th { 
+                                a {
+                                    attr {
+                                        href => $c->req->uri_with({
+                                            order_by => $_,
+                                            order_by_desc => $desc,
+                                        }) } $_ 
+                                }
+                            }
                         } @fields
                     };
 
@@ -403,7 +466,7 @@ Only goes so far...
 
 The event log is in most dire need for this.
 
-=item Sorting, filtering etc
+=item Filtering, etc
 
 Of objects, requests, etc. Javascript or serverside, it doesn't matter.
 
@@ -434,5 +497,3 @@ Yuval Kogman <nothingmuch@woobling.org>
 	under the terms of the MIT license or the same terms as Perl itself.
 
 =cut
-
-
