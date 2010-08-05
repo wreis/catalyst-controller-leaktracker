@@ -27,8 +27,8 @@ my $size_of_empty_array = Devel::Size::total_size([]);
 sub end : Private { } # don't get Root's one
 
 sub order_by {
-    my ( $self, $requests, $field, $mode ) = @_;
-    return () unless @$requests;
+    my ( $self, $objects, $field, $mode ) = @_;
+    return () unless @$objects;
 
     my $order_by_meth = {
         num => sub {
@@ -52,7 +52,7 @@ sub order_by {
               } qw/id time leaks size/ ),
             ( map {
                 $_ => $order_by_meth->{'lex_desc'}
-              } qw/action uri/ ),
+              } qw/action uri class/ ),
         };
     }
     else {
@@ -62,14 +62,14 @@ sub order_by {
               } qw/id time leaks size/ ),
             ( map {
                 $_ => $order_by_meth->{'lex'}
-              } qw/action uri/ ),
+              } qw/action uri class/ ),
         };
     }
     if ( my $meth = $order_by_map->{$field} ) {
-        return $meth->($requests);
+        return $meth->($objects);
     }
     else {
-        return @$requests;
+        return @$objects;
     }
 }
 
@@ -157,7 +157,8 @@ sub list_requests : Chained {
                                         href => $c->req->uri_with({
                                             order_by => $_,
                                             order_by_desc => $desc,
-                                        }) } $_ 
+                                        })
+                                    } $_ 
                                 }
                             }
                         } @fields
@@ -275,8 +276,9 @@ sub _cycle_report {
 
 sub request : Chained {
     my ( $self, $c, $request_id ) = @_;
+    my $params = $c->req->params;
 
-    my $log = $c->request->param("event_log");
+    my $log = $params->{'event_log'};
 
     my $log_output = $log && YAML::XS::Dump($c->get_request_events($request_id));
 
@@ -291,7 +293,14 @@ sub request : Chained {
             size => Devel::Size::total_size($object),
             class => ref $object,
         }
-    } sort { $a->{id} <=> $b->{id} } values %$live_objects;
+    } values %$live_objects;
+    my ( $order_by, $order_by_desc )
+        = map { $params->{$_} } qw/order_by order_by_desc/;
+    @leaks = $self->order_by(
+        \@leaks,
+        $order_by || 'id',
+        $order_by_desc ? 'desc' : 'asc',
+    ) if @leaks;
 
 
     my @fields = qw/id size class/;
@@ -315,7 +324,24 @@ sub request : Chained {
         package Catalyst::Controller::LeakTracker::Template;
         table {
             attr { border => "1", style => "border: 1px solid black; padding: 0.3em" }
-            row { map { th { attr { style => "padding: 0.2em" }; $_ } } @fields };
+            row { 
+                map { 
+                    my $desc = ( $order_by_desc || ( $order_by || '') ne $_) ? 0 : 1;
+                    th { 
+                        attr {
+                            style => "padding: 0.2em",
+                        };
+                        a {
+                            attr {
+                                href => $c->req->uri_with({
+                                    order_by => $_,
+                                    order_by_desc => $desc,
+                                })
+                            } $_
+                        };
+                    }
+                } @fields
+            };
 
             foreach my $leak ( @leaks ) {
                 row {
