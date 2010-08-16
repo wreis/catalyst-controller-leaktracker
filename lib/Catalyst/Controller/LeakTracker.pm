@@ -508,13 +508,12 @@ Maybe it's useful for someone.
 
 You have a Catalyst application that is consuming more and more
 memory over time.  You would like to find out what classes are
-involved and where you may have cyclic references.  On a related note,
-one could probably tweak this thing into a memory profiler as well.
+involved and where you may have cyclic references.
 
 =head2 How to use LeakTracker?
 
 Once you've plugged LeakTracker into your Catalyst application 
-(see L</SYNOPSIS>), you can easily get statistics via 
+(see L</SYNOPSIS>), then you can easily get statistics via 
 Catalyst::Controller::LeakTracker. Just create a new controller exclusively
 for reporting on the objects that are not being garbage collected.  
 Here is how:
