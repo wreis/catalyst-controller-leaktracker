@@ -18,6 +18,19 @@ my $list = request('/list_requests');
 ok( $list->is_success, 'list request succeeded' );
 like( $list->content, qr/leak_something/, "mentions leaked request" );
 like( $list->content, qr{http://\S*?/request/\d+}, "link to request page" );
+ok( $list->content =~ m{(http://\S*?/list_requests)\?.*order_by_desc=0.*order_by=id},
+    'link for ordering');
+my $order_by_id_uri = URI->new($1);
+$order_by_id_uri->query_form({
+    order_by_desc => 0,
+    order_by => 'id',
+});
+$list = request($order_by_id_uri);
+ok( $list->is_success, 'list request succeeded' );
+like( $list->content, qr{(http://\S*?/list_requests\?.*order_by_desc=1.*order_by=id)},
+    'link for desc ordering');
+like( $list->content, qr{(http://\S*?/list_requests\?.*order_by_desc=0.*order_by=leaks)},
+    'link for ordering by leaks');
 
 my ( $request ) = ( $list->content =~ m{(http://\S*?/request/\d+)} );
 
