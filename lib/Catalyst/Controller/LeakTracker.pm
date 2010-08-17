@@ -5,7 +5,7 @@ use parent qw(Catalyst::Controller);
 
 use Moose;
 
-our $VERSION = "0.06";
+our $VERSION = "0.07";
 
 use Data::Dumper ();
 use Devel::Cycle ();
@@ -555,13 +555,15 @@ L<Devel::Events>, L<Catalyst::Plugin::Leaktracker>,
 L<http://blog.jrock.us/articles/Plugging%20a%20leaky%20whale.pod>,
 L<Devel::Size>, L<Devel::Cycle>
 
-=head1 VERSION CONTROL
-
-L<http://github.com/nothingmuch/Catalyst-Controller-Leaktracker>
-
 =head1 AUTHOR
 
 Yuval Kogman <nothingmuch@woobling.org>
+
+=head1 CONTRIBUTORS
+
+Mateu X. Hunter <hunter@missoula.org>
+
+Wallace Reis <wreis@cpan.org>
 
 =head1 COPYRIGHT & LICENSE
 
