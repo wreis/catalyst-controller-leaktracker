@@ -1,25 +1,26 @@
-#!/usr/bin/perl -w
+use inc::Module::Install;
 
-use strict;
+name 'Catalyst-Controller-LeakTracker';
+all_from 'lib/Catalyst/Controller/LeakTracker.pm';
+repository 'http://github.com/wreis/catalyst-controller-leaktracker';
+license 'perl';
 
-use ExtUtils::MakeMaker;
-
-WriteMakefile(
-	NAME         => 'Catalyst::Controller::LeakTracker',
-	VERSION_FROM => 'lib/Catalyst/Controller/LeakTracker.pm',
-	INSTALLDIRS  => 'site',
-	PL_FILES     => { },
-	PREREQ_PM    => {
-        'Catalyst::Runtime' => 5.8,
-        'Devel::Size' => 0,
-        'Devel::Cycle' => 0,
-        'Catalyst::Plugin::LeakTracker' => 0,
-        'Data::Dumper' => 0,
-        'Template::Declare' => 0.42,
-        'Number::Bytes::Human' => 0.07,
-        'Test::More' => 0.88,
-        'Test::use::ok' => 0,
-        'YAML::XS' => 0,
-	},
+build_requires(
+    'Test::More' => 0.88,
+    'Test::use::ok' => 0,
 );
 
+requires(
+    'Catalyst::Runtime' => 5.8,
+    'Devel::Size' => 0,
+    'Devel::Cycle' => 0,
+    'Catalyst::Plugin::LeakTracker' => 0,
+    'Data::Dumper' => 0,
+    'Template::Declare' => 0.42,
+    'Number::Bytes::Human' => 0.07,
+    'YAML::XS' => 0,
+);
+
+auto_install;
+
+WriteAll;
