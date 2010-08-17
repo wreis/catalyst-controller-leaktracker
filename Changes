@@ -1,3 +1,7 @@
+0.07
+    - Switch to Module::Install
+    - Add CONTRIBUTORS section
+
 0.06
     - Sorting for requests and leaks (wreis)
     - Mini-Tutorial (mateu)
