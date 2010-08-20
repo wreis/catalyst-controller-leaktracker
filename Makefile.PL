@@ -11,6 +11,7 @@ build_requires(
 );
 
 requires(
+    'parent' => 0,
     'Catalyst::Runtime' => 5.8,
     'Devel::Size' => 0,
     'Devel::Cycle' => 0,
