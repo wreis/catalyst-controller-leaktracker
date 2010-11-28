@@ -466,7 +466,7 @@ Artificially leak some objects, to make sure everything is working properly
 
 =head1 CAVEATS
 
-In forking environments each child will have it's own leak tracking. To avoid
+In forking environments each child will have its own leak tracking. To avoid
 confusion run your apps under the development server or temporarily configure
 fastcgi or whatever to only use one child process.
 
