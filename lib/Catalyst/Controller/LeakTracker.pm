@@ -551,7 +551,7 @@ to your application.
 
 =head1 SEE ALSO
 
-L<Devel::Events>, L<Catalyst::Plugin::Leaktracker>,
+L<Devel::Events>, L<Catalyst::Plugin::LeakTracker>,
 L<http://blog.jrock.us/articles/Plugging%20a%20leaky%20whale.pod>,
 L<Devel::Size>, L<Devel::Cycle>
 
