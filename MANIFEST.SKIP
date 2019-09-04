@@ -8,6 +8,8 @@
 \b_darcs\b
 
 # Avoid Makemaker generated and utility files.
+\bMYMETA.json$
+\bMYMETA.yml$
 \bMANIFEST\.bak
 \bMakefile$
 \bblib/
